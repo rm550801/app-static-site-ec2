@@ -1,17 +1,17 @@
 # VPC
-resource "aws_vpc" "vpc" {
+resource "aws_vpc" "VPC_IAC_CP02" {
     cidr_block           = "10.0.0.0/16"
     enable_dns_hostnames = "true"
 }
 
 # INTERNET GATEWAY
-resource "aws_internet_gateway" "igw" {
-    vpc_id = aws_vpc.vpc.id
+resource "aws_internet_gateway" "IGW_IAC_CP02" {
+    vpc_id = aws_vpc.VPC_IAC_CP02.id
 }
 
 # SUBNET
-resource "aws_subnet" "sn_public" {
-    vpc_id                  = aws_vpc.vpc.id
+resource "aws_subnet" "SUBNET_IAC_CP02" {
+    vpc_id                  = aws_vpc.VPC_IAC_CP02.id
     cidr_block              = "10.0.1.0/24"
     map_public_ip_on_launch = "true"
     availability_zone       = "us-east-1a"
@@ -19,25 +19,25 @@ resource "aws_subnet" "sn_public" {
 }
 
 # ROUTE TABLE
-resource "aws_route_table" "rt_public" {
-    vpc_id = aws_vpc.vpc.id
+resource "aws_route_table" "ROUTETABLE_IAC_CP02" {
+    vpc_id = aws_vpc.VPC_IAC_CP02.id
 
     route {
         cidr_block = "0.0.0.0/0"
-        gateway_id = aws_internet_gateway.igw.id
+        gateway_id = aws_internet_gateway.IGW_IAC_CP02.id
     }
 }
 
 # SUBNET ASSOCIATION
-resource "aws_route_table_association" "rt_public_To_sn_public" {
-  subnet_id      = aws_subnet.sn_public.id
-  route_table_id = aws_route_table.rt_public.id
+resource "aws_route_table_association" "ROUTETABLE_SUBNET_IAC_CO02" {
+  subnet_id      = aws_subnet.SUBNET_IAC_CP02.id
+  route_table_id = aws_route_table.ROUTETABLE_IAC_CP02.id
 }
 
 # SECURITY GROUP
-resource "aws_security_group" "sg_public" {
-    name        = "sg_public"
-    vpc_id      = aws_vpc.vpc.id
+resource "aws_security_group" "SECGROUP_IAC_CP02" {
+    name        = "SECGROUP-IAC-CP02"
+    vpc_id      = aws_vpc.VPC_IAC_CP02.id
     
     egress {
         from_port   = 0
@@ -76,10 +76,10 @@ data "template_file" "user_data" {
     template = "${file("./scripts/user_data.sh")}"
 }
 
-resource "aws_instance" "instance" {
+resource "aws_instance" "EC2_IAC_CP02" {
     ami                    = "ami-02e136e904f3da870"
     instance_type          = "t2.micro"
-    subnet_id              = aws_subnet.sn_public.id
-    vpc_security_group_ids = [aws_security_group.sg_public.id]
+    subnet_id              = aws_subnet.SUBNET_IAC_CP02.id
+    vpc_security_group_ids = [aws_security_group.SECGROUP_IAC_CP02.id]
     user_data              = "${base64encode(data.template_file.user_data.rendered)}"
 }
